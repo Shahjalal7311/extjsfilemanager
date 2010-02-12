@@ -144,25 +144,42 @@ img.x-tree-node-icon.file {
 /*--------------------*/
 
 /* Loading Mask Styles */
-#loading_mask {
-	background-color: #FFFFFF;
+#loading-container {
+	background-color: #fff;
+	z-index: 20000;
+}
+#loading-mask {
+	background-color: #fff;
 	height: 100%;
 	left: 0;
 	position: absolute;
 	top: 0;
-    width: 100%;
-	z-index: 20000;
+	width: 100%;
+	z-index: 20001;
 }
-#loading {
+#loading-wrapper {
 	height: auto;
 	position: absolute;
 	top: 40%;
 	width: 100%;
-	z-index: 20001;
-    
+	z-index: 20002;
 }
-#loading_indicator {
+#loading-indicator {
+	color: #999;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 10px;
 	margin: auto;
+	text-align: center;
 	width: 312px;
 }
 /*--------------------*/
+
+/* Resizable Element Fixes */
+.x-resizble-cropper {
+	border: 2px dashed;
+}
+.x-resizble-cropper .x-resizable-handle {
+	background: none;
+	display: block;
+	opacity: 1;
+}

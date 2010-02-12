@@ -130,11 +130,12 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 						url: 'actions.php',
 						method: 'POST',
 						params: {'action': 'resize_image', 'image': this.image, 'resize_width': Ext.getCmp('resize_width').getValue(), 'resize_height': Ext.getCmp('resize_height').getValue()},
+						scope: this,
 						success: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							
 							if (response.success === true) {
-								Ext.getDom('image_iframe').contentWindow.location.reload();
+								Ext.getCmp('image-frame').load('image.php?image=' + this.image);
 							} else {
 								// Set a status bar message
 								Ext.getCmp('status_bar').setStatus({
@@ -146,7 +147,12 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 						}
 					});
 				}
-			}]
+			}],
+			listeners: {
+				'show': function() {
+					resize_form.doLayout();
+				}
+			}
 		});
 		
 		var rotate_form = new Ext.form.FormPanel({
@@ -196,11 +202,12 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 						url: 'actions.php',
 						method: 'POST',
 						params: {'action': 'rotate_image', 'image': this.image, 'rotate_degrees': Ext.getCmp('rotate_degrees').getGroupValue()},
+						scope: this,
 						success: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							
 							if (response.success === true) {
-								Ext.getDom('image_iframe').contentWindow.location.reload();
+								Ext.getCmp('image-frame').load('image.php?image=' + this.image);
 							} else {
 								// Set a status bar message
 								Ext.getCmp('status_bar').setStatus({
@@ -230,8 +237,38 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 				text: 'Apply Changes',
 				scope: this,
 				handler: function() {
+					var crop_x = Ext.get('crop_resizer_el').getLeft() - Ext.get('wrapper').getX();
+					var crop_y = Ext.get('crop_resizer_el').getTop() - Ext.get('wrapper').getY();
+					
+					var connection = new Ext.data.Connection().request({
+						url: 'actions.php',
+						method: 'POST',
+						params: {'action': 'crop_image', 'image': this.image, 'crop_x': crop_x, 'crop_y': crop_y, 'crop_width': Ext.get('crop_resizer_el').getWidth(), 'crop_height': Ext.get('crop_resizer_el').getHeight()},
+						scope: this,
+						success: function(o) {
+							var response = Ext.util.JSON.decode(o.responseText);
+							
+							if (response.success === true) {
+								Ext.getCmp('image-frame').load('image.php?image=' + this.image);
+							} else {
+								// Set a status bar message
+								Ext.getCmp('status_bar').setStatus({
+									text: response.message,
+									iconCls: 'save_warning_icon',
+									clear: true
+								});
+							}
+						}
+					});
 				}
-			}]
+			}],
+			listeners: {
+				'hide': function() {
+					if (Ext.get('crop_resizer_el')) {
+						Ext.get('crop_resizer_el').remove();
+					}
+				}
+			}
 		});
 
 		Ext.apply(this, {
@@ -267,6 +304,7 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 				text: 'Resize',
 				tooltip: 'Resize Image',
 				iconCls: 'resize_button',
+				scope: this,
 				handler: function() {
 					resize_form.show();
 					rotate_form.hide();
@@ -276,39 +314,52 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 				text: 'Rotate',
 				tooltip: 'Rotate Image',
 				iconCls: 'rotate_button',
+				scope: this,
 				handler: function() {
 					resize_form.hide();
 					rotate_form.show();
 					crop_form.hide();
 				}
-			}/*,{
+			},{
 				text: 'Crop',
 				tooltip: 'Crop Image',
 				iconCls: 'crop_button',
+				scope: this,
 				handler: function() {
 					resize_form.hide();
 					rotate_form.hide();
 					crop_form.show();
 					
 					// Now create a crop tool
-					var resizer = new Ext.Resizable('element-id', {
-						handles: 'all',
-						//minWidth: this.image_width,
-						//minHeight: 100,
-						maxWidth: this.imageWidth,
-						maxHeight: this.imageHeight,
-						pinned: true
-					});
+					if (Ext.get('crop_resizer_el') == null) {
+						var crop_resizer_el = Ext.DomHelper.append(Ext.get('wrapper'), {'id': 'crop_resizer_el', 'tag': 'div', 'class': 'x-resizble-cropper', 'style': 'cursor: move; height: 50px; left: ' + Ext.get('wrapper').getLeft() + 'px; position: absolute; top: ' + Ext.get('wrapper').getTop() + 'px; width: 50px;'});
+						var crop_resizer = new Ext.Resizable(crop_resizer_el, {
+							constrainTo: Ext.get('wrapper'),
+							pinned: true,
+							minWidth: 10,
+							minHeight: 10,
+							maxWidth: this.imageWidth,
+							maxHeight: this.imageHeight,
+							handles: 'all',
+							draggable: true,
+							dynamic: true
+						});
+						
+						Ext.get('crop_resizer_el').center();
+					}
 				}
-			}*/],
+			}],
 			items: [{
 				region: 'center',
 				layout: 'anchor',
 				border: false,
 				items: [{
+					id: 'image-frame',
 					anchor: '100% 100%',
 					border: false,
-					html: '<iframe id="image_iframe" name="image_iframe" style="height: 100%; width: 100%;" frameborder="0" allowtransparency="true" src="image.php?image=' + this.image + '"></iframe>'
+					autoLoad: {
+						url: 'image.php?image=' + this.image
+					}
 				}]
 			},{
 				id: 'east-region',
@@ -318,7 +369,8 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 				border: false,
 				items: [
 					resize_form,
-					rotate_form
+					rotate_form,
+					crop_form
 				]
 			}]
 		});
@@ -352,4 +404,4 @@ Ext.ux.ImageEditor = Ext.extend(Ext.Window, {
 	}
 });
 
-//Ext.reg('ImageEditor', Ext.ux.ImageEditor);
+Ext.reg('imageeditor', Ext.ux.ImageEditor);

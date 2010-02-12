@@ -1,4 +1,4 @@
-<?
+<?php
 // Start the session for this page
 session_start();
 header("Cache-control: private");
@@ -15,25 +15,19 @@ include ("includes/functions.inc.php");
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>File Manager</title>
-<link rel="stylesheet" type="text/css" href="/scripts/ext-2.0/resources/css/ext-all.css" />
-<link rel="stylesheet" type="text/css" href="/scripts/ext-2.0/resources/css/xtheme-gray.css" />
+<link rel="stylesheet" type="text/css" href="<?php print EXT_DIRECTORY; ?>/resources/css/ext-all.css" />
+<link rel="stylesheet" type="text/css" href="includes/Ext.ux.UploadDialog/css/Ext.ux.UploadDialog.css" />
 <link rel="stylesheet" type="text/css" href="css/styles.css" />
 
-<script language="javascript" type="text/javascript" src="/scripts/ext-2.0/adapter/ext/ext-base.js"></script>
-<script language="javascript" type="text/javascript" src="/scripts/ext-2.0/ext-all.js"></script>
-
-<link rel="stylesheet" type="text/css" href="includes/Ext.ux.UploadDialog/css/Ext.ux.UploadDialog.css" />
-<script language="javascript" type="text/javascript" src="includes/Ext.ux.UploadDialog/Ext.ux.UploadDialog.packed.js"></script>
+<script language="javascript" type="text/javascript" src="<?php print EXT_DIRECTORY; ?>/adapter/ext/ext-base.js"></script>
+<script language="javascript" type="text/javascript" src="<?php print EXT_DIRECTORY; ?>/ext-all.js"></script>
+<script language="javascript" type="text/javascript" src="includes/Ext.ux.StatusBar/Ext.ux.StatusBar.js"></script>
+<script language="javascript" type="text/javascript" src="includes/Ext.ux.UploadDialog/Ext.ux.UploadDialog.js"></script>
 <script language="javascript" type="text/javascript" src="includes/Ext.ux.ImageEditor/Ext.ux.ImageEditor.js"></script>
-
 <script language="javascript" type="text/javascript">
 	Ext.onReady(function(){
 		Ext.QuickTips.init();
 		Ext.form.Field.prototype.msgTarget = 'side';
-		
-		// Remove the loading panel after the page is loaded
-		Ext.get('loading').remove();
-		Ext.get('loading_mask').fadeOut({remove:true});
 		
 		// Setup a variable for the current directory
 		var current_directory = '';
@@ -47,7 +41,7 @@ include ("includes/functions.inc.php");
 			enableDD: true,
 			ddGroup : 'fileMove',
 			loader: new Ext.tree.TreeLoader({
-				dataUrl: 'tree_data.json.php'
+				dataUrl: 'tree-data.json.php'
 			}),
 			root: new Ext.tree.AsyncTreeNode({
 				text: 'Files',
@@ -101,7 +95,7 @@ include ("includes/functions.inc.php");
 		
 		/* ---- Begin grid --- */
 		var ds = new Ext.data.GroupingStore({
-			url: 'grid_data.json.php',
+			url: 'actions.php',
 			method: 'POST',
 			autoLoad: true,
 			sortInfo: {field: 'name', direction: 'ASC'},
@@ -123,19 +117,24 @@ include ("includes/functions.inc.php");
 			])
 		});
 		
-		var cm = new Ext.grid.ColumnModel([
-			{header: 'Name', dataIndex: 'name', sortable: true},
-			{header: 'Size', dataIndex: 'size', sortable: true, renderer: Ext.util.Format.fileSize},
-			{header: 'Type', dataIndex: 'type', sortable: true},
-			{header: 'Permissions', dataIndex: 'permissions', sortable: true},
-			{header: 'Created', dataIndex: 'ctime', sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i:s')},
-			{header: 'Modified', dataIndex: 'mtime', sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i:s')},
-			{header: 'Owner', dataIndex: 'owner', sortable: true},
-			{header: 'Group', dataIndex: 'group', sortable: true},
-			{header: 'Relative Path', dataIndex: 'relative_path', sortable: true, hidden: true},
-			{header: 'Full Path', dataIndex: 'full_path', sortable: true, hidden: true},
-			{header: 'Web Path', dataIndex: 'web_path', sortable: true, hidden: true}
-		]);
+		var cm = new Ext.grid.ColumnModel({
+			defaults: {
+				sortable: true
+			},
+			columns: [
+				{header: 'Name', dataIndex: 'name'},
+				{header: 'Size', dataIndex: 'size', renderer: Ext.util.Format.fileSize},
+				{header: 'Type', dataIndex: 'type'},
+				{header: 'Permissions', dataIndex: 'permissions'},
+				{header: 'Created', dataIndex: 'ctime', renderer: Ext.util.Format.dateRenderer('Y-m-d H:i:s')},
+				{header: 'Modified', dataIndex: 'mtime', renderer: Ext.util.Format.dateRenderer('Y-m-d H:i:s')},
+				{header: 'Owner', dataIndex: 'owner'},
+				{header: 'Group', dataIndex: 'group'},
+				{header: 'Relative Path', dataIndex: 'relative_path', hidden: true},
+				{header: 'Full Path', dataIndex: 'full_path', hidden: true},
+				{header: 'Web Path', dataIndex: 'web_path', hidden: true}
+			]
+		});
 		
 		var grid = new Ext.grid.GridPanel({
 			anchor: '0 100%',
@@ -172,10 +171,8 @@ include ("includes/functions.inc.php");
 				region: 'center',
 				layout: 'anchor',
 				border: false,
-				tbar: new Ext.StatusBar({
-					id: 'status_bar',
-					defaultText: '',
-					defaultIconCls: '',
+				tbar: new Ext.ux.StatusBar({
+					id: 'status-bar',
 					statusAlign: 'right',
 					items: [{
 						id: 'upload_button',
@@ -310,7 +307,7 @@ include ("includes/functions.inc.php");
 							},
 							failure: function() {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: 'Error: Could not rename file',
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -448,7 +445,7 @@ include ("includes/functions.inc.php");
 							},
 							failure: function() {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: 'Error: Could not chmod file',
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -484,7 +481,7 @@ include ("includes/functions.inc.php");
 								ds.reload();
 							} else {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: response.message,
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -494,7 +491,7 @@ include ("includes/functions.inc.php");
 						failure: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -530,7 +527,7 @@ include ("includes/functions.inc.php");
 							ds.reload();
 						} else {
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -540,7 +537,7 @@ include ("includes/functions.inc.php");
 					failure: function(o) {
 						var response = Ext.util.JSON.decode(o.responseText);
 						// Set a status bar message
-						Ext.getCmp('status_bar').setStatus({
+						Ext.getCmp('status-bar').setStatus({
 							text: response.message,
 							iconCls: 'save_warning_icon',
 							clear: true
@@ -565,7 +562,7 @@ include ("includes/functions.inc.php");
 								tree.getRootNode().expand();
 							} else {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: response.message,
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -575,7 +572,7 @@ include ("includes/functions.inc.php");
 						failure: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -601,7 +598,7 @@ include ("includes/functions.inc.php");
 								tree.getRootNode().expand();
 							} else {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: response.message,
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -611,7 +608,7 @@ include ("includes/functions.inc.php");
 						failure: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -634,7 +631,7 @@ include ("includes/functions.inc.php");
 							
 							if (response.success == false) {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: response.message,
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -644,7 +641,7 @@ include ("includes/functions.inc.php");
 						failure: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -670,7 +667,7 @@ include ("includes/functions.inc.php");
 								tree.getRootNode().expand();
 							} else {
 								// Set a status bar message
-								Ext.getCmp('status_bar').setStatus({
+								Ext.getCmp('status-bar').setStatus({
 									text: response.message,
 									iconCls: 'save_warning_icon',
 									clear: true
@@ -680,7 +677,7 @@ include ("includes/functions.inc.php");
 						failure: function(o) {
 							var response = Ext.util.JSON.decode(o.responseText);
 							// Set a status bar message
-							Ext.getCmp('status_bar').setStatus({
+							Ext.getCmp('status-bar').setStatus({
 								text: response.message,
 								iconCls: 'save_warning_icon',
 								clear: true
@@ -696,9 +693,9 @@ include ("includes/functions.inc.php");
 </head>
 
 <body>
-	<div id="loading_mask"></div>
-	<div id="loading"> 
-		<div id="loading_indicator"><img src="images/loading_indicator.gif" alt="Loading" /> Loading...</div>
-	</div>
+	<?php
+	// Include main config file
+	include ("includes/loading-mask.inc.php");
+	?>
 </body>
 </html>

@@ -10,7 +10,7 @@ var ImageChooser = function(config) {
 		maxSize: 250,
 		animate: true, 
 		loader: new Ext.tree.TreeLoader({
-			dataUrl: 'tree_data.json.php'
+			dataUrl: 'tree-data.json.php'
 		}),
 		enableDD: true,
 		containerScroll: true,
@@ -40,7 +40,7 @@ var ImageChooser = function(config) {
 	this.initTemplates();
 			
 	this.store = new Ext.data.JsonStore({
-		url: 'grid_data.json.php', //this.config.url,
+		url: 'actions.php', //this.config.url,
 		method: 'POST',
 		baseParams: {'images_only': true},
 		autoLoad: true,
@@ -135,7 +135,7 @@ ImageChooser.prototype = {
 	initTemplates: function(){
 		this.thumbTemplate = new Ext.XTemplate(
 			'<tpl for=".">',
-				'<div class="thumb-wrap" id="{name}">',
+				'<div class="thumb-wrap" id="{id}">',
 				'<div class="thumb"><img src="{web_path}" title="{name}"></div>',
 				'<span>{short_name}</span></div>',
 			'</tpl>'

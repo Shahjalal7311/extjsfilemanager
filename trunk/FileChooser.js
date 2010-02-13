@@ -10,7 +10,7 @@ var FileChooser = function(config) {
 		maxSize: 250,
 		animate: true, 
 		loader: new Ext.tree.TreeLoader({
-			dataUrl: 'tree_data.json.php'
+			dataUrl: 'tree-data.json.php'
 		}),
 		enableDD: true,
 		containerScroll: true,
@@ -38,7 +38,7 @@ var FileChooser = function(config) {
 	
 	/* ---- Begin grid --- */
 	this.ds = new Ext.data.GroupingStore({
-		url: 'grid_data.json.php',
+		url: 'actions.php',
 		method: 'POST',
 		autoLoad: true,
 		sortInfo: {field: 'name', direction: 'ASC'},

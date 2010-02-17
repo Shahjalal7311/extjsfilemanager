@@ -14,6 +14,6 @@ $image = str_replace(basename($_REQUEST['image']), '_fm_' . basename($_REQUEST['
 ?>
 <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0" style="background: url(images/transparent_grid.png);">
 <tr>
-<td align="center" valign="middle"><div id="wrapper" style="display: inline-block;"><img src="<? print WEB_DIRECTORY.$image; ?>?<? print rand(); ?>" /></div></td>
+<td align="center" valign="middle"><div id="wrapper" style="display: inline-block; position: relative;"><img src="<? print WEB_DIRECTORY.$image; ?>?<? print rand(); ?>" /></div></td>
 </tr>
 </table>

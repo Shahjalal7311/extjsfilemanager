@@ -1,0 +1,3 @@
+I abstracted this file manager from another sytem I have been writing, but I think alot of people would find parts of it useful, namely the image editing. It uses a couple open source PHP classes for JSON encoding and image manipulation (using the GD library), and should work on just about any standard PHP 4/5 installation.
+
+Also included are some examples of how to tie the file manager into other applications using a FileChooser and an ImageChooser. I have used these to implement custom TinyMCE file and image choosers.... The code should be pretty extendable (as it was based on some of jacks examples).
